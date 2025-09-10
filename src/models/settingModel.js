@@ -18,6 +18,14 @@ const SettingSChema = new mongoose.Schema({
     type: Array
 
   },
+  sponser: {
+    type: Array
+
+  },
+  donation: {
+    type: Array
+
+  },
   coverHeading:{
     type: String
   },
