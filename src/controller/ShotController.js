@@ -12,10 +12,6 @@ import { use } from 'react';
 export const updateShot = async (req, res) => {
   try {
     const data = req.body;
-
-
-
-    console.log(data, 'salar kuryem er udpate data')
     const id = req.params.id;
 
     if (!id) {
@@ -33,19 +29,31 @@ export const updateShot = async (req, res) => {
       Object.keys(updateData.simulatorTypes).forEach(key => {
         if (Array.isArray(updateData.simulatorTypes[key])) {
           updateData.simulatorTypes[key] = updateData.simulatorTypes[key]
-            .filter(item => item && typeof item === 'string');
+            .filter(item => item && typeof item === 'string' && item !== 'false');
         }
       });
     }
 
-    // Handle tags if present
-    if (updateData.tags && !Array.isArray(updateData.tags)) {
-      updateData.tags = [];
-    }
+    // Handle arrays - remove 'false' values and empty strings
+    const arrayFields = [
+      'tags', 'focalLength', 'lightingConditions', 'videoType', 
+      'referenceType', 'videoSpeed', 'videoQuality', 'simulationSize',
+      'simulationStyle', 'motionStyle', 'emitterSpeed', 'simulationSoftware'
+    ];
 
-    // Handle timecodes if present
-    if (updateData.timecodes && !Array.isArray(updateData.timecodes)) {
-      updateData.timecodes = [];
+    arrayFields.forEach(field => {
+      if (updateData[field] && Array.isArray(updateData[field])) {
+        updateData[field] = updateData[field].filter(item => 
+          item && typeof item === 'string' && item !== 'false'
+        );
+      }
+    });
+
+    // Handle timecodes - ensure proper structure
+    if (updateData.timecodes && Array.isArray(updateData.timecodes)) {
+      updateData.timecodes = updateData.timecodes.filter(tc => 
+        tc && tc.label && tc.time && tc.image
+      );
     }
 
     const updatedShot = await Shot.findByIdAndUpdate(
@@ -76,7 +84,6 @@ export const updateShot = async (req, res) => {
     });
   }
 };
-
 
 
 
