@@ -8,6 +8,53 @@ import { use } from 'react';
 
 // sd
 
+
+
+
+
+export const deleteTimecode = async (req, res) => {
+  try {
+    const { label, time, id, image } = req.body;
+    
+    // Log the exact values being received
+    console.log("Received data:", { label, time, id, image });
+    
+    // Use more flexible matching with $or condition
+    const updateDelete = await Shot.updateOne(
+      { _id: id },
+      { 
+        $pull: { 
+          timecodes: { 
+            $or: [
+              { label: label?.trim(), time: time?.toString()?.trim() },
+              { image: image?.trim() }
+            ]
+          } 
+        } 
+      }
+    );
+
+    console.log("Delete result:", updateDelete);
+
+    if (updateDelete.modifiedCount === 0) {
+      return res.status(404).json({
+        message: "Timecode not found or no changes made",
+        updateDelete
+      });
+    }
+
+    res.status(200).json({
+      message: "Timecode deleted successfully",
+      updateDelete
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message || "Something went wrong!",
+      error
+    });
+  }
+};
+
 // Backend API endpoint (Node.js/Express example)
 export const updateShot = async (req, res) => {
   try {
